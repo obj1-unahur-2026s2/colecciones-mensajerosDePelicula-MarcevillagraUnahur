@@ -1,0 +1,53 @@
+import destinos.*
+import mensajeros.*
+import paquetes.*
+
+describe "Destinos y mensajeros" {
+
+  test "roberto de 90kg en camion con 1 acoplado puede llevar paquete pago al puente de Brooklyn" {
+    roberto.pesoPropio (90)
+    roberto.transporte (new Camion(acoplados = 1))
+    paquete.estaPago (true)
+    paquete.destino (puenteDeBrooklyn)
+    assert.that(paquete.puedeSerEntregadoPor(roberto))
+  }
+
+  test "neo con credito no puede llevar un paquete que no esta pago a la matrix" {
+    neo.tieneCredito (true)
+    paquete.estaPago (false)
+    paquete.destino (laMatrix)
+    assert.notThat(paquete.puedeSerEntregadoPor(neo))
+  }
+
+  test "neo con credito puede llevar un paquete pago a la matrix" {
+    neo.tieneCredito (true)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.that(paquete.puedeSerEntregadoPor(neo))
+  }
+
+  test "neo sin credito no puede llevar un paquete pago a la matrix" {
+    neo.tieneCredito (false)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.notThat(paquete.puedeSerEntregadoPor(neo))
+  }
+
+  test "chuck norris puede llevar un paquete pago tanto a la matrix como al puente" {
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.that(paquete.puedeSerEntregadoPor(chuckNorris))
+  }
+
+  test "roberto no puede llevar un paquete a la matrix porque no puede llamar" {
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.notThat(paquete.puedeSerEntregadoPor(roberto))
+  }
+
+  test "roberto en bicicleta de 90kg pesa 95kg" {
+    roberto.pesoPropio (90)
+    roberto.transporte (bicicleta)
+    assert.equals(95, roberto.peso())
+  }
+}

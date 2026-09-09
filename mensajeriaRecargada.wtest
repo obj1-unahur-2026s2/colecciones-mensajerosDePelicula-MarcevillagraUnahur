@@ -1,0 +1,160 @@
+import destinos.*
+import mensajeros.*
+import paquetes.*
+import mensajeria.*
+
+describe "Mensajería recargada - Tercera parte" {
+
+  method initialize() {
+    mensajeria.reiniciar()
+    roberto.pesoPropio (90)
+    roberto.transporte (bicicleta)
+    neo.tieneCredito (true)
+  }
+
+  test "el paquete original tiene un precio de 50" {
+    assert.equals(50, paquete.precio())
+  }
+
+  test "paquetito es gratis" {
+    assert.equals(0, paquetito.precio())
+  }
+
+  test "paquetito siempre esta pago" {
+    assert.that(paquetito.estaPago())
+  }
+
+  test "paquetito puede ser llevado por cualquier mensajero incluso sin credito ni pase" {
+    neo.tieneCredito (false)
+    assert.that(paquetito.puedeSerEntregadoPor(neo))
+  }
+
+  test "paqueton viajero calcula su precio a razon de 100 por destino" {
+    const paqueton = new PaquetonViajero(destinos = [puenteDeBrooklyn, laMatrix])
+    assert.equals(200, paqueton.precio())
+  }
+
+  test "paqueton viajero no esta pago si se pago parcialmente" {
+    const paqueton = new PaquetonViajero(destinos = [puenteDeBrooklyn, laMatrix])
+    paqueton.pagar(150)
+    assert.notThat(paqueton.estaPago())
+  }
+
+  test "paqueton viajero esta pago cuando se completa el pago total" {
+    const paqueton = new PaquetonViajero(destinos = [puenteDeBrooklyn, laMatrix])
+    paqueton.pagar(200)
+    assert.that(paqueton.estaPago())
+  }
+
+  test "paqueton viajero requiere que el mensajero pueda pasar por todos sus destinos" {
+    const paqueton = new PaquetonViajero(destinos = [puenteDeBrooklyn, laMatrix])
+    paqueton.pagar(200)
+    assert.that(paqueton.puedeSerEntregadoPor(chuckNorris))
+  }
+
+  test "paqueton viajero no puede ser entregado si el mensajero falla en algun destino" {
+    const paqueton = new PaquetonViajero(destinos = [puenteDeBrooklyn, laMatrix])
+    paqueton.pagar(200)
+    assert.notThat(paqueton.puedeSerEntregadoPor(roberto))
+  }
+
+  test "averiguar si un paquete puede ser entregado por la empresa si al menos uno puede" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.that(mensajeria.puedeEntregar(paquete))
+  }
+
+  test "averiguar si un paquete no puede ser entregado por la empresa si ninguno puede" {
+    mensajeria.contratar(roberto)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.notThat(mensajeria.puedeEntregar(paquete))
+  }
+
+  test "obtener todos los mensajeros que pueden llevar un paquete dado" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    mensajeria.contratar(neo)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.equals([chuckNorris, neo], mensajeria.mensajerosQuePuedenLlevar(paquete))
+  }
+
+  test "mensajeria tiene sobrepeso si el promedio de peso de los mensajeros supera los 500kg" {
+    roberto.transporte (new Camion(acoplados = 2))
+    mensajeria.contratar(roberto)
+    assert.that(mensajeria.tieneSobrepeso())
+  }
+
+  test "mensajeria no tiene sobrepeso si el promedio no supera los 500kg" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    assert.notThat(mensajeria.tieneSobrepeso())
+  }
+
+  test "enviar un paquete posible suma a la facturacion de la empresa" {
+    mensajeria.contratar(chuckNorris)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    mensajeria.enviar(paquete)
+    assert.equals(50, mensajeria.facturacion())
+  }
+
+  test "enviar un paquete que no se puede entregar lo agrega a paquetes pendientes" {
+    mensajeria.contratar(roberto)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    mensajeria.enviar(paquete)
+    assert.that(mensajeria.paquetesPendientes().contains(paquete))
+  }
+
+  test "enviar un conjunto de paquetes procesa todos y actualiza facturacion" {
+    mensajeria.contratar(chuckNorris)
+    const paqueton = new PaquetonViajero(destinos = [puenteDeBrooklyn, laMatrix])
+    paqueton.pagar(200)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    mensajeria.enviarTodos([paquetito, paquete, paqueton])
+    assert.equals(250, mensajeria.facturacion())
+  }
+
+  test "encontrar el paquete pendiente mas caro" {
+    mensajeria.contratar(roberto)
+    const paqueton = new PaquetonViajero(destinos = [puenteDeBrooklyn, laMatrix, laMatrix])
+    paqueton.pagar(300)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    mensajeria.enviar(paquete)
+    mensajeria.enviar(paqueton)
+    assert.equals(paqueton, mensajeria.paquetePendienteMasCaro())
+  }
+
+  test "enviar el paquete pendiente mas caro lo remueve de pendientes al poder enviarse" {
+    mensajeria.contratar(roberto)
+    const paqueton = new PaquetonViajero(destinos = [puenteDeBrooklyn, laMatrix])
+    paqueton.pagar(200)
+    mensajeria.enviar(paqueton)
+    mensajeria.contratar(chuckNorris)
+    mensajeria.enviarPaquetePendienteMasCaro()
+    assert.notThat(mensajeria.paquetesPendientes().contains(paqueton))
+  }
+
+  test "nuevo mensajero morfeo puede entregar a la matrix" {
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.that(paquete.puedeSerEntregadoPor(morfeo))
+  }
+
+  test "nuevo paquete fragil no puede ser entregado por mensajero de mas de 100kg" {
+    roberto.pesoPropio (120)
+    const fragil = new PaqueteFragil(estaPago = true, destino = puenteDeBrooklyn)
+    assert.notThat(fragil.puedeSerEntregadoPor(roberto))
+  }
+
+  test "nuevo paquete fragil puede ser entregado por mensajero liviano" {
+    const fragil = new PaqueteFragil(estaPago = true, destino = puenteDeBrooklyn)
+    assert.that(fragil.puedeSerEntregadoPor(chuckNorris))
+  }
+}

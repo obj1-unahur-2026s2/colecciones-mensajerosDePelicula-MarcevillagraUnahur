@@ -1,0 +1,68 @@
+import destinos.*
+import mensajeros.*
+import paquetes.*
+import mensajeria.*
+
+describe "Empresa de mensajería - Segunda parte" {
+
+  method initialize() {
+    mensajeria.despedirATodos()
+    roberto.pesoPropio (90)
+    roberto.transporte (bicicleta)
+    neo.tieneCredito (true)
+  }
+
+  test "contratar a un mensajero lo agrega a la empresa" {
+    mensajeria.contratar(roberto)
+    assert.equals(1, mensajeria.cantidadMensajeros())
+  }
+
+  test "despedir a un mensajero lo remueve de la empresa" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    mensajeria.despedir(roberto)
+    assert.notThat(mensajeria.mensajeros().contains(roberto))
+  }
+
+  test "despedir a todos deja la mensajeria sin empleados" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    mensajeria.despedirATodos()
+    assert.equals(0, mensajeria.cantidadMensajeros())
+  }
+
+  test "la mensajeria es grande si tiene mas de dos mensajeros" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    mensajeria.contratar(neo)
+    assert.that(mensajeria.esGrande())
+  }
+
+  test "la mensajeria no es grande si tiene dos o menos mensajeros" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    assert.notThat(mensajeria.esGrande())
+  }
+
+  test "el primer empleado puede entregar el paquete si cumple las condiciones" {
+    mensajeria.contratar(chuckNorris)
+    mensajeria.contratar(roberto)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.that(mensajeria.puedeEntregarPrimerEmpleado(paquete))
+  }
+
+  test "el primer empleado no puede entregar el paquete si no cumple las condiciones" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    paquete.estaPago (true)
+    paquete.destino (laMatrix)
+    assert.notThat(mensajeria.puedeEntregarPrimerEmpleado(paquete))
+  }
+
+  test "saber el peso del ultimo mensajero de la empresa" {
+    mensajeria.contratar(roberto)
+    mensajeria.contratar(chuckNorris)
+    assert.equals(80, mensajeria.pesoUltimoMensajero())
+  }
+}
