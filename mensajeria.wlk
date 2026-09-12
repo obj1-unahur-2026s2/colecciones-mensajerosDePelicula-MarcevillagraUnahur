@@ -2,7 +2,7 @@ import mensajeros.*
 import paquetes.*
 
 object mensajeria {
-  const mensajeros = []
+  const mensajeros = #{}
   const paquetesPendientes = []
   var facturacion = 0
 
@@ -34,9 +34,9 @@ object mensajeria {
 
   method esGrande() = self.cantidadMensajeros() > 2
 
-  method primerEmpleado() = mensajeros.first()
+  method primerEmpleado() = mensajeros.asList().first()
 
-  method ultimoEmpleado() = mensajeros.last()
+  method ultimoEmpleado() = mensajeros.asList().last()
 
   method puedeEntregarPrimerEmpleado(unPaquete) = unPaquete.puedeSerEntregadoPor(self.primerEmpleado())
 

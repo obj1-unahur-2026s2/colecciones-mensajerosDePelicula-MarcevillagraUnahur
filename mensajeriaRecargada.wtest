@@ -79,7 +79,7 @@ describe "Mensajería recargada - Tercera parte" {
     mensajeria.contratar(neo)
     paquete.estaPago (true)
     paquete.destino (laMatrix)
-    assert.equals([chuckNorris, neo], mensajeria.mensajerosQuePuedenLlevar(paquete))
+    assert.equals(#{chuckNorris, neo}, mensajeria.mensajerosQuePuedenLlevar(paquete))
   }
 
   test "mensajeria tiene sobrepeso si el promedio de peso de los mensajeros supera los 500kg" {
